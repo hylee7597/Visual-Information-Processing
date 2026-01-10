@@ -1,0 +1,15 @@
+# Ignore the dataset folder (Change this to your actual data folder name)
+dataset/
+images/
+Face_Mask_Dataset/
+
+# Ignore checkpoints and cache
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Ignore massive files
+*.zip
+*.tar.gz
+*.h5
+*.pt

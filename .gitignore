@@ -1,7 +1,5 @@
 # Ignore the dataset folder (Change this to your actual data folder name)
-dataset/
-images/
-Face_Mask_Dataset/
+# why ignore dataset folder haha wofangchulaile
 
 # Ignore checkpoints and cache
 .ipynb_checkpoints/

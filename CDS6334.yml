@@ -1,0 +1,4 @@
+name: CDS6334
+channels:
+  - defaults
+prefix: C:\anaconda3\envs\CDS6334

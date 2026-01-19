@@ -1,0 +1,19 @@
+# Ignore the dataset folder (Change this to your actual data folder name)
+# why ignore dataset folder haha wofangchulaile
+
+# Ignore checkpoints and cache
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Ignore system folders and files
+AppData/
+.DS_Store
+Thumbs.db
+.env
+
+# Ignore massive files
+*.zip
+*.tar.gz
+*.h5
+*.pt

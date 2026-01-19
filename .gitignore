@@ -6,6 +6,12 @@
 __pycache__/
 *.pyc
 
+# Ignore system folders and files
+AppData/
+.DS_Store
+Thumbs.db
+.env
+
 # Ignore massive files
 *.zip
 *.tar.gz

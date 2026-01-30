@@ -1,4 +1,16 @@
 name: CDS6334
 channels:
   - defaults
-prefix: C:\anaconda3\envs\CDS6334
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+    - opencv-python>=4.5.0
+    - numpy==1.23.5
+    - tensorflow==2.12.0
+    - mtcnn>=0.1.1
+    - pandas>=1.3.0
+    - matplotlib>=3.4.0
+    - seaborn>=0.11.0
+    - scikit-learn>=1.0.0

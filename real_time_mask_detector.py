@@ -15,27 +15,14 @@ from datetime import datetime
 class MaskDetector:
     # Initialize mask detector with trained model and face detector
     def __init__(self, model_path, cascade_path=None, enhance_type=None, face_detector='dnn'):
-        self.model = tf.keras.models.load_model(model_path)
+        self.model = tf.keras.models.load_model(model_path, compile=False)
         self.class_names = ['Incorrect Mask', 'With Mask', 'Without Mask']
         self.enhance_type = enhance_type
         self.detector_type = face_detector
         
         # Load face detector based on type
-        # DNN-based face detector (more accurate, better for masks)
-        if face_detector == 'dnn':
-            prototxt = "deploy.prototxt"
-            caffemodel = "res10_300x300_ssd_iter_140000.caffemodel"
-            
-            # Try to load from current directory, otherwise download
-            if not os.path.exists(prototxt) or not os.path.exists(caffemodel):
-                print("[INFO] DNN model files not found. Downloading...")
-                self._download_dnn_models()
-            
-            self.face_net = cv2.dnn.readNetFromCaffe(prototxt, caffemodel)
-            print(f"[INFO] Loaded DNN face detector (ResNet-10 SSD)")
-
         # YuNet face detector (OpenCV's newest, very fast)           
-        elif face_detector == 'yunet':
+        if face_detector == 'yunet':
             model_path_yunet = "face_detection_yunet_2023mar.onnx"
             if not os.path.exists(model_path_yunet):
                 print("[INFO] YuNet model not found. Downloading...")
@@ -52,8 +39,9 @@ class MaskDetector:
             except ImportError:
                 print("[ERROR] MTCNN not installed. Install: pip install mtcnn")
                 raise
-            
-        else:  # haar cascade (default fallback)
+        # Haar Cascade face detector (legacy, less accurate)
+        elif face_detector == 'haar':
+            # Check for haar cascade file, if no, use default from cv2
             if cascade_path is None:
                 cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
             self.face_cascade = cv2.CascadeClassifier(cascade_path)
@@ -61,7 +49,20 @@ class MaskDetector:
             if self.face_cascade.empty():
                 raise ValueError(f"Could not load cascade from {cascade_path}")
             print(f"[INFO] Loaded Haar Cascade face detector")
-        
+            
+        else:  # dnn (default fallback)
+            prototxt = "deploy.prototxt"
+            caffemodel = "res10_300x300_ssd_iter_140000.caffemodel"
+            
+            # Try to load from current directory, otherwise download from OpenCV repo
+            if not os.path.exists(prototxt) or not os.path.exists(caffemodel):
+                print("[INFO] DNN model files not found. Downloading...")
+                self._download_dnn_models()
+            
+            # Load DNN face detector
+            self.face_net = cv2.dnn.readNetFromCaffe(prototxt, caffemodel)
+            print(f"[INFO] Loaded DNN face detector (ResNet-10 SSD)")
+            
         print(f"[INFO] Loaded mask detection model: {model_path}")
     
     # Function to download DNN models (if not present)
@@ -212,23 +213,23 @@ class MaskDetector:
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Real-Time Face Mask Detection')
-    # Model to be used for mask status detection
-    parser.add_argument('--model', type=str, default='mask_detector_efficientnet.h5',
-                        help='Path to trained model (.h5 file)')
-    # Video source (default is webcam)
+    # Model to be used for mask status detection (default: efficientnet)
+    parser.add_argument('--model',type=str, default='mask_detector_efficientnet.keras',
+                        help='Path to trained model (.keras or .h5)')
+    # Video source (default: webcam)
     parser.add_argument('--source', type=str, default='0',
                         help='Video source: 0 for webcam, or path to video file')
-    # Confidence threshold for predictions (default 0.5)
+    # Confidence threshold for predictions (default: 0.5)
     parser.add_argument('--confidence-threshold', type=float, default=0.5,
                         help='Confidence threshold for predictions')
     # Display FPS counter (default: True)
     parser.add_argument('--fps-display', action='store_true', default=True,
                         help='Display FPS counter')
-    # Save output video path (default: None = do not save)
+    # Save output video path (default: None = do not save video)
     parser.add_argument('--save-output', type=str, default=None,
                         help='Path to save output video (e.g., output.mp4)')
-    # Face detector type (default: haar)
-    parser.add_argument('--face-detector', type=str, default='haar',
+    # Face detector type (default: dnn)
+    parser.add_argument('--face-detector', type=str, default='dnn',
                         choices=['dnn', 'haar', 'yunet', 'mtcnn'],
                         help='Face detection method: dnn (recommended), yunet (fastest), mtcnn (most accurate but slow), haar (legacy)')
     args = parser.parse_args()
@@ -239,7 +240,7 @@ def main():
             print(f"[ERROR] Model not found: {args.model}")
             print("[INFO] Available models in current directory:")
             for f in os.listdir('.'):
-                if f.endswith('.h5'):
+                if f.endswith(('.keras', '.h5')):
                     print(f"  - {f}")
             return
         

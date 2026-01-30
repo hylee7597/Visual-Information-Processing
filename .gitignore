@@ -15,5 +15,4 @@ Thumbs.db
 # Ignore massive files
 *.zip
 *.tar.gz
-*.h5
 *.pt
